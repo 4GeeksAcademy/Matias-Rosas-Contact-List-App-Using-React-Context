@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/home.css";
-
+// Tareas pendientes:
+// 1) Cambiar icono de editar y eliminar
+//2) Agregar function de eliminar	
 export const Home = () => {
 	const [contacts, setContacts] = useState([]);
 	const navigate = useNavigate();
@@ -10,24 +12,39 @@ export const Home = () => {
 		fetch("https://playground.4geeks.com/contact/agendas?offset=0&limit=100")
 		  .then((resp) => resp.json())
 		  .then((data) => {
-			console.log(data);
-			data.agendas.map((item) => {
-			  if (item.slug === "MatiRosas31") { 
-				console.log("Usuario encontrado");
-				//AGREGAR FUNCTION DE TRAER DATOS Y TODO EL RESTO
-			  } else {
-				console.log("Usuario no encontrado :(");
-			  }
-			});
+			const foundUser = data.agendas.find((item) => item.slug === "MatiRosas31");
+	
+			if (foundUser) {
+				console.log("Usuario encontrado: ", foundUser);
+				getContacts () 
+			} else {
+				console.log("Usuario no encontrado: Creando usuario...");
+				let newUser = {
+					slug: "MatiRosas31"
+				};
+				fetch("https://playground.4geeks.com/contact/agendas/MatiRosas31", {
+					method: "POST",
+					body: JSON.stringify(newUser),
+					headers: {
+						"Content-Type": "application/json",
+					},
+				})
+				.then((resp) => {
+					console.log(resp.ok); 
+					console.log(resp.status); 
+					return resp.json();  
+				})
+				.then((user) => {
+					console.log("Usuario creado: ", user);
+					getContacts () 
+				})
+				.catch((error) => console.error(error));
+			}
 		  })
 		  .catch((error) => console.log(error));
-		};
+	}
 
-// Tareas pendientes:
-// 1) Hacer una function para agregar contactos usando el componente NuevoContacto
-// 2) La function debe ser parecida a la de las tareas todo 
-// 3) Debera pushear nuevos objetos al array con la info de los forms
-	
+
 
 	function getContacts () {
 		fetch("https://playground.4geeks.com/contact/agendas/MatiRosas31/contacts")
@@ -40,7 +57,7 @@ export const Home = () => {
 	}	
 
 	useEffect(() => {
-		getContacts ()
+		checkUser();
 	}, []);
 	
 	return (
@@ -51,11 +68,9 @@ export const Home = () => {
         <button className="btn btn-success" onClick={()=> {
 			navigate("/nuevo-contacto")
 		}}>Add new contact</button>
-		<button className="btn btn-danger" onClick={()=> {
-			checkUser();
-		}}>Checkear si mi Usuario sigue vivo</button>
       </div>
-      {contacts.map(contact => (
+	  {contacts.length === 0 ? <div className="d-flex justify-content-center"><span className="text-secondary">No tienes contactos, haz click en <span className="fw-bolder">Add new contact</span> para agregar uno</span></div> :
+	  contacts.map(contact => (
         <div key={contact.id} className="card mb-3">
           <div className="row g-0">
             <div className="col-md-2">
@@ -72,7 +87,7 @@ export const Home = () => {
               </div>
             </div>
             <div className="col-md-2 d-flex align-items-center justify-content-center">
-              <button className="btn btn-link"><i className="fas fa-edit"></i></button>
+              <button className="btn btn-link" onClick={() => navigate(`/EditContacto/${contact.id}`)}><i className="fas fa-edit"></i></button>
               <button className="btn btn-link"><i className="fas fa-trash"></i></button>
             </div>
           </div>
