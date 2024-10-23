@@ -11,7 +11,8 @@ const NuevoContacto = () => {
 
   function addNewContact(name, email, phone, address) {
     if (name === "" || email === "" || phone === "" || address === "") {
-      setError("All fields are required!"); 
+      setError("All fields are required!");
+      return;
     }
 
     setError("");
