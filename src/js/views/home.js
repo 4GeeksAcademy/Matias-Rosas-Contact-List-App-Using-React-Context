@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/home.css";
-// Tareas pendientes:
-// 1) Cambiar icono de editar y eliminar
-//2) Agregar function de eliminar	
+
 export const Home = () => {
 	const [contacts, setContacts] = useState([]);
 	const navigate = useNavigate();
@@ -56,6 +54,21 @@ export const Home = () => {
 		.catch((error)=> console.log(error));
 	}	
 
+	function removeContact (contactid) {
+		console.log("Este es el contact.id que llega a la function: ", contactid)
+		let newupdatedcontacts = contacts.filter((contact)=> contact.id !== contactid)
+		setContacts(newupdatedcontacts)
+		fetch(`https://playground.4geeks.com/contact/agendas/MatiRosas31/contacts/${contactid}`, {
+			method: "DELETE",
+			headers: {
+				"Content-Type": "application/json",
+			}
+		})
+		.then((resp) => {
+			console.log("Esta es la respuesta luego de la peticion de eliminar el contacto: ", resp.status)
+		})
+		.catch((error) => console.error(error));
+	}
 	useEffect(() => {
 		checkUser();
 	}, []);
@@ -88,7 +101,7 @@ export const Home = () => {
             </div>
             <div className="col-md-2 d-flex align-items-center justify-content-center">
               <button className="btn btn-link" onClick={() => navigate(`/EditContacto/${contact.id}`)}><i className="fas fa-edit"></i></button>
-              <button className="btn btn-link"><i className="fas fa-trash"></i></button>
+              <button className="btn btn-link" onClick={() => {removeContact(contact.id)}}><i className="fas fa-trash"></i></button>
             </div>
           </div>
         </div>
